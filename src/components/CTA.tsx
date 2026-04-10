@@ -4,13 +4,13 @@ import { ArrowRight, Sparkles } from 'lucide-react'
 
 export default function CTA() {
   return (
-    <section id="cta" className="py-24 relative overflow-hidden bg-white">
+    <section id="cta" className="py-24 relative overflow-hidden bg-background">
       <div className="container mx-auto px-6 relative z-10 max-w-[1200px]">
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="bg-[#fbfbfd] border border-black/[0.03] rounded-[3rem] p-12 md:p-20 text-center max-w-5xl mx-auto overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
+          className="bg-card border border-border/50 rounded-[3rem] p-12 md:p-20 text-center max-w-5xl mx-auto overflow-hidden relative shadow-sm"
         >
           {/* Subtle background glow */}
           <div className="absolute inset-x-0 -top-40 h-80 bg-[#0071e3]/5 blur-[120px] pointer-events-none" />
@@ -25,7 +25,7 @@ export default function CTA() {
             <span className="gradient-text">Start making waves.</span>
           </h2>
           
-          <p className="text-lg md:text-xl text-secondary mb-12 max-w-2xl mx-auto relative z-10 font-medium leading-relaxed opacity-70">
+          <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto relative z-10 font-medium leading-relaxed opacity-70">
             Join 10,000+ visionaries who have already ditched the physical card for a smarter, instantaneous, and digital-first professional identity.
           </p>
 
@@ -33,7 +33,7 @@ export default function CTA() {
             get your elite card <ArrowRight className="w-5 h-5" />
           </button>
 
-          <div className="mt-8 text-[10px] font-black text-secondary/30 uppercase tracking-[0.3em] relative z-10">
+          <div className="mt-8 text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] relative z-10">
              No App Required • Universal Tap • Eco-Friendly
           </div>
         </motion.div>

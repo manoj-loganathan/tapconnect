@@ -38,7 +38,7 @@ export default function Pricing() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground tracking-tight">Simple, Transparent <span className="gradient-text">Pricing</span></h2>
-          <p className="text-secondary max-w-2xl mx-auto text-lg">Choose the perfect plan for you or your team. Upgrade anytime.</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">Choose the perfect plan for you or your team. Upgrade anytime.</p>
         </motion.div>
 
         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 max-w-6xl mx-auto">
@@ -50,7 +50,7 @@ export default function Pricing() {
               viewport={{ once: true, margin: "-50px" }}
               transition={{ delay: i * 0.15 }}
               className={`relative w-full lg:w-1/3 bg-card rounded-[2.5rem] p-10 border transition-all ${
-                plan.popular ? 'border-primary/30 shadow-xl transform lg:-translate-y-4 shadow-primary/10' : 'border-black/5 shadow-sm hover:shadow-md'
+                plan.popular ? 'border-primary/30 shadow-xl transform lg:-translate-y-4 shadow-primary/10' : 'border-border/50 shadow-sm hover:shadow-md'
               }`}
             >
               {plan.popular && (
@@ -60,22 +60,22 @@ export default function Pricing() {
               )}
               
               <h3 className="text-2xl font-bold mb-2 text-foreground tracking-tight">{plan.name}</h3>
-              <p className="text-sm text-secondary h-10 mb-8 leading-relaxed font-medium">{plan.desc}</p>
+              <p className="text-sm text-muted-foreground h-10 mb-8 leading-relaxed font-medium">{plan.desc}</p>
               
               <div className="mb-8 flex items-baseline">
                 <span className="text-5xl font-extrabold text-foreground tracking-tight">{plan.price}</span>
-                {plan.period && <span className="text-secondary ml-1 font-medium">{plan.period}</span>}
+                {plan.period && <span className="text-muted-foreground ml-1 font-medium">{plan.period}</span>}
               </div>
 
               <button className={`w-full py-4 rounded-full font-semibold mb-10 transition-colors ${
-                plan.popular ? 'apple-btn shadow-md' : 'bg-muted hover:bg-black/10 text-foreground'
+                plan.popular ? 'apple-btn shadow-md' : 'bg-muted hover:bg-accent text-foreground border border-border/50'
               }`}>
                 {plan.name === 'Teams' ? 'Contact Sales' : 'Open Account'}
               </button>
 
-              <ul className="space-y-5 border-t border-black/5 pt-8">
+              <ul className="space-y-5 border-t border-border/50 pt-8">
                 {plan.features.map((feature, j) => (
-                  <li key={j} className="flex items-center gap-3 text-sm text-secondary font-medium">
+                  <li key={j} className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                     <Check className="w-5 h-5 text-primary shrink-0" strokeWidth={3} /> {feature}
                   </li>
                 ))}

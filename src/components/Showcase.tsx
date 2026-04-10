@@ -40,7 +40,7 @@ export default function Showcase() {
   const [hoveredBar, setHoveredBar] = useState<number | null>(null)
 
   return (
-    <section id="showcase" className="py-24 relative overflow-hidden bg-[#fbfbfd]">
+    <section id="showcase" className="py-24 relative overflow-hidden bg-background">
       <div className="container mx-auto px-6 max-w-[1200px]">
 
         {/* Section header */}
@@ -61,7 +61,7 @@ export default function Showcase() {
               Designed for <br />
               <span className="gradient-text">Performance</span>
             </h2>
-            <p className="text-secondary text-lg mb-10 leading-relaxed">
+            <p className="text-muted-foreground text-lg mb-10 leading-relaxed">
               Experience a dashboard that brings all your networking analytics into one clean, seamless interface. Real-time updates push directly to your connections.
             </p>
 
@@ -103,16 +103,16 @@ export default function Showcase() {
             {/* Ambient glow */}
             <div className="absolute inset-0 bg-[#0071e3]/5 blur-[80px] rounded-full pointer-events-none" />
 
-            <div className="relative bg-white rounded-[2rem] shadow-2xl border border-black/5 overflow-hidden">
+            <div className="relative bg-card rounded-[2rem] shadow-2xl border border-border/50 overflow-hidden">
               {/* Dashboard header bar */}
-              <div className="bg-[#f9f9fb] px-6 py-4 flex items-center justify-between border-b border-black/5">
+              <div className="bg-muted/30 px-6 py-4 flex items-center justify-between border-b border-border/50">
                 <div className="flex items-center gap-3">
                   <div className="flex gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
                     <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
                     <div className="w-3 h-3 rounded-full bg-[#28c840]" />
                   </div>
-                  <div className="text-sm font-semibold text-secondary flex items-center gap-2">
+                  <div className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
                     <Activity className="w-4 h-4 text-[#0071e3]" /> Analytics Overview
                   </div>
                 </div>
@@ -140,16 +140,16 @@ export default function Showcase() {
                       viewport={{ once: true }}
                       transition={{ delay: i * 0.1 }}
                       whileHover={{ scale: 1.04, y: -2 }}
-                      className="bg-[#f9f9fb] rounded-2xl p-4 border border-black/[0.03] cursor-default"
+                      className="bg-muted/30 rounded-2xl p-4 border border-border/50 cursor-default"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <div className="text-[11px] font-semibold text-secondary uppercase tracking-widest">{stat.label}</div>
+                        <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">{stat.label}</div>
                         <ArrowUpRight className="w-4 h-4" style={{ color: stat.color }} />
                       </div>
                       <div className="text-2xl font-black text-foreground tracking-tight">
                         <CountUp target={stat.value} />
                       </div>
-                      <div className="mt-2 h-1 w-full bg-black/5 rounded-full overflow-hidden">
+                      <div className="mt-2 h-1 w-full bg-border rounded-full overflow-hidden">
                         <motion.div className="h-full rounded-full" style={{ background: stat.color }} initial={{ width: 0 }} whileInView={{ width: `${55 + i * 15}%` }} transition={{ duration: 1, delay: 0.4 + i * 0.1 }} />
                       </div>
                     </motion.div>
@@ -160,7 +160,7 @@ export default function Showcase() {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-sm font-bold text-foreground">Monthly Taps</div>
-                    <div className="text-xs text-secondary font-medium bg-[#f0f6ff] text-[#0071e3] px-3 py-1 rounded-full border border-[#0071e3]/10">2024</div>
+                    <div className="text-xs text-primary font-medium bg-primary/10 px-3 py-1 rounded-full border border-primary/20">2024</div>
                   </div>
                   <div className="h-28 flex items-end gap-1.5 group">
                     {bars.map((height, i) => (
@@ -174,9 +174,9 @@ export default function Showcase() {
                           viewport={{ once: true }}
                           transition={{ delay: i * 0.05, duration: 0.4, type: 'spring' }}
                           className="w-full rounded-t-lg cursor-pointer transition-all duration-200"
-                          style={{ background: hoveredBar === i ? '#0071e3' : hoveredBar !== null ? '#e0e9ff' : '#bfd5ff' }}
+                          style={{ background: hoveredBar === i ? '#0071e3' : hoveredBar !== null ? '#e0e9ff' : '#0071e380' }}
                         />
-                        <div className="text-[8px] font-medium text-secondary/50">{weekDays[i]}</div>
+                        <div className="text-[8px] font-medium text-muted-foreground/50">{weekDays[i]}</div>
                       </div>
                     ))}
                   </div>
@@ -186,7 +186,7 @@ export default function Showcase() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="text-sm font-bold text-foreground">Recent Activity</div>
-                    <Bell className="w-4 h-4 text-secondary" />
+                    <Bell className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="space-y-2">
                     {recentActivity.map((act, i) => (
@@ -197,14 +197,14 @@ export default function Showcase() {
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 + i * 0.1 }}
                         whileHover={{ x: 4 }}
-                        className="flex items-center gap-3 p-3 bg-[#f9f9fb] rounded-xl border border-black/[0.03] cursor-pointer hover:border-[#0071e3]/20 transition-all"
+                        className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border/50 cursor-pointer hover:border-[#0071e3]/40 transition-all"
                       >
                         <div className="w-8 h-8 rounded-full bg-[#0071e3]/10 flex items-center justify-center text-[#0071e3] flex-shrink-0">
                           <act.icon className="w-3.5 h-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs font-bold text-foreground truncate">{act.name}</div>
-                          <div className="text-[10px] text-secondary">{act.time}</div>
+                          <div className="text-[10px] text-muted-foreground">{act.time}</div>
                         </div>
                         <div className="text-[10px] font-bold text-[#0071e3] bg-[#0071e3]/5 px-2 py-1 rounded-full border border-[#0071e3]/10 flex-shrink-0">
                           {act.tag}

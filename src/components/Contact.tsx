@@ -60,8 +60,8 @@ export default function Contact() {
   const currentQuestion = questions[step]
 
   return (
-    <section id="contact" className="py-24 relative overflow-hidden bg-white">
-      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 50%, #f9fbff 0%, transparent 80%)' }} />
+    <section id="contact" className="py-24 relative overflow-hidden bg-background">
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.05) 0%, transparent 80%)' }} />
 
       <div className="container mx-auto px-6 max-w-[1240px] relative z-10">
         
@@ -69,7 +69,7 @@ export default function Contact() {
           <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground tracking-tight leading-none">
             Reach out, we’re ready to <span className="gradient-text">collaborate</span>
           </h2>
-          <p className="text-secondary/60 text-sm font-medium leading-relaxed">
+          <p className="text-muted-foreground/80 text-sm font-medium leading-relaxed">
             Experience the future of collaboration with our AI-guided consultant.
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function Contact() {
                         onKeyDown={handleKeyDown}
                         placeholder={currentQuestion.placeholder}
                         rows={3}
-                        className="w-full bg-transparent border-b-2 border-black/[0.06] py-4 outline-none text-xl font-semibold transition-all placeholder:text-secondary/10 resize-none h-24"
+                        className="w-full bg-transparent border-b-2 border-border/50 py-4 outline-none text-xl font-semibold transition-all placeholder:text-muted-foreground/30 resize-none h-24"
                       />
                     ) : (
                       <input
@@ -118,7 +118,7 @@ export default function Contact() {
                         onChange={(e) => setAnswers({ ...answers, [currentQuestion.id]: e.target.value })}
                         onKeyDown={handleKeyDown}
                         placeholder={currentQuestion.placeholder}
-                        className="w-full bg-transparent border-b-2 border-black/[0.06] py-4 outline-none text-xl font-semibold transition-all placeholder:text-secondary/10 h-16"
+                        className="w-full bg-transparent border-b-2 border-border/50 py-4 outline-none text-xl font-semibold transition-all placeholder:text-muted-foreground/30 h-16"
                       />
                     )}
                   </div>
@@ -127,7 +127,7 @@ export default function Contact() {
                     {step > 0 && (
                       <button
                         onClick={handlePrev}
-                        className="px-6 py-4 bg-black/[0.03] hover:bg-black/[0.06] text-secondary rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2"
+                        className="px-6 py-4 bg-muted hover:bg-accent text-muted-foreground rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2"
                       >
                         <ArrowLeft className="w-3.5 h-3.5" />
                         Back
@@ -135,7 +135,7 @@ export default function Contact() {
                     )}
                     <button
                       onClick={handleNext}
-                      className="px-8 py-4 bg-[#1d1d1f] hover:bg-black text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:shadow-xl hover:shadow-black/10 active:scale-95 flex items-center gap-2 group"
+                      className="px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:shadow-xl hover:shadow-primary/10 active:scale-95 flex items-center gap-2 group"
                     >
                       {step === questions.length - 1 ? 'Finalize' : 'Continue'}
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -148,11 +148,11 @@ export default function Contact() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center space-y-6 max-w-md mx-auto"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#0071e3]/5 border border-[#0071e3]/10 flex items-center justify-center mx-auto mb-8">
-                     <CheckCircle2 className="w-10 h-10 text-[#0071e3]" />
+                  <div className="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-8">
+                     <CheckCircle2 className="w-10 h-10 text-primary" />
                   </div>
                   <h3 className="text-3xl font-black text-foreground tracking-tight">Transmission Complete</h3>
-                  <p className="text-secondary font-medium leading-relaxed">
+                  <p className="text-muted-foreground font-medium leading-relaxed">
                     Thank you {answers.name?.split(' ')[0]}. Our futuristic design team will review your inquiry and reach out within 24 hours.
                   </p>
                   <button 
@@ -203,15 +203,15 @@ export default function Contact() {
             </div>
 
             {/* Material Tabs (Minimal: No Icons) */}
-            <div className="w-full max-w-[280px] p-1 bg-black/[0.03] rounded-xl mb-8 flex border border-black/[0.01]">
+            <div className="w-full max-w-[280px] p-1 bg-muted rounded-xl mb-8 flex border border-border/50">
               {materials.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => setMaterial(m.id)}
                   className={`flex-1 py-2 rounded-lg transition-all text-[9px] font-black uppercase tracking-widest ${
                     material === m.id 
-                    ? 'bg-white shadow-md text-foreground' 
-                    : 'text-secondary/30 hover:text-secondary/60'
+                    ? 'bg-background shadow-sm text-foreground' 
+                    : 'text-muted-foreground/50 hover:text-muted-foreground'
                   }`}
                 >
                   {m.name}

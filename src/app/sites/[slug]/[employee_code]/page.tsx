@@ -58,7 +58,7 @@ export default async function EmployeeProfile({
     .sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
 
   return (
-    <div className="min-h-screen bg-[#fbfbfd] flex flex-col items-center justify-start pb-20 overflow-x-hidden">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-start overflow-x-hidden">
       <ProfileClient
         employee={employee}
         org={org}

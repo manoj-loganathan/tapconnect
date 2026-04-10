@@ -14,7 +14,7 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-white pt-16 pb-8 relative overflow-hidden border-t border-black/[0.03]">
+    <footer className="bg-background pt-16 pb-8 relative overflow-hidden border-t border-border/50">
       <div className="container mx-auto px-6 max-w-[1400px] relative z-10">
         
         {/* Top Section: Branding & Links */}
@@ -32,7 +32,7 @@ export default function Footer() {
                 <Link 
                   key={link.name} 
                   href={link.href}
-                  className="text-[11px] font-black uppercase tracking-widest text-[#1d1d1f] hover:text-[#0071e3] transition-all"
+                  className="text-[11px] font-black uppercase tracking-widest text-foreground hover:text-[#0071e3] transition-all"
                 >
                   {link.name}
                 </Link>
@@ -45,12 +45,12 @@ export default function Footer() {
                 <Link 
                   key={link.name} 
                   href={link.href}
-                  className="text-[11px] font-black uppercase tracking-widest text-[#1d1d1f] hover:text-[#0071e3] transition-all"
+                  className="text-[11px] font-black uppercase tracking-widest text-foreground hover:text-[#0071e3] transition-all"
                 >
                   {link.name}
                 </Link>
               ))}
-              <Link href="#" className="text-[11px] font-black uppercase tracking-widest text-[#1d1d1f] hover:text-[#0071e3] transition-all">Support</Link>
+              <Link href="#" className="text-[11px] font-black uppercase tracking-widest text-foreground hover:text-[#0071e3] transition-all">Support</Link>
             </div>
           </div>
         </div>
@@ -62,19 +62,19 @@ export default function Footer() {
           viewport={{ once: true }}
           className="w-full text-center py-4"
         >
-          <h1 className="text-[13vw] font-black text-[#1d1d1f] tracking-[-0.04em] leading-[0.8] select-none uppercase">
+          <h1 className="text-[13vw] font-black text-foreground tracking-[-0.04em] leading-[0.8] select-none uppercase">
             TapConnect
           </h1>
         </motion.div>
 
         {/* Bottom Metadata Bar */}
-        <div className="pt-12 mt-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-black/[0.02]">
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] font-black uppercase tracking-[0.2em] text-secondary/30">
+        <div className="pt-12 mt-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-border/50">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
             <span>© {currentYear} tapconnect inc.</span>
             <Link href="#" className="hover:text-foreground transition-colors">privacy policy</Link>
             <Link href="#" className="hover:text-foreground transition-colors">terms and condition</Link>
           </div>
-          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary/20">
+          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
              v1.0.4 - beta stable
           </div>
         </div>

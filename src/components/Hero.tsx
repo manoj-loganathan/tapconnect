@@ -17,7 +17,7 @@ export default function Hero() {
             </span>
           </h1>
           
-          <p className="text-xl text-secondary mb-10 font-medium leading-relaxed max-w-lg">
+          <p className="text-xl text-muted-foreground mb-10 font-medium leading-relaxed max-w-lg">
             Share your digital identity in a single tap — no apps, no friction, just seamless networking.
           </p>
           
@@ -35,7 +35,7 @@ export default function Hero() {
               </div>
               <div>
                 <div className="text-lg font-bold text-foreground tracking-tight leading-none mb-1">4000+ Active users</div>
-                <div className="text-xs text-secondary font-medium">From across the world.</div>
+                <div className="text-xs text-muted-foreground font-medium">From across the world.</div>
               </div>
             </div>
 
@@ -48,7 +48,7 @@ export default function Hero() {
               </div>
               <div>
                 <div className="text-lg font-bold text-foreground tracking-tight leading-none mb-1">5M+ Taps</div>
-                <div className="text-xs text-secondary font-medium">Completed in our lifetime.</div>
+                <div className="text-xs text-muted-foreground font-medium">Completed in our lifetime.</div>
               </div>
             </div>
           </div>
