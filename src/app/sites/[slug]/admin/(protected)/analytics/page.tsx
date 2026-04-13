@@ -1,9 +1,13 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart3 } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { AnalyticsDashboard } from '@/components/analytics-dashboard'
 
 export default function AnalyticsPage() {
+  const params = useParams()
+  const slug = params?.slug as string
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center gap-3">
@@ -16,17 +20,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Data Visualization</CardTitle>
-          <CardDescription>
-            Heatmaps, geographic clustering, and timeline velocity charting will render here.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="h-[40vh] flex items-center justify-center border-t border-border/50 bg-muted/20">
-            <span className="text-muted-foreground text-sm font-medium tracking-tight">Charts Container Placeholder</span>
-        </CardContent>
-      </Card>
+      <AnalyticsDashboard slug={slug} />
     </div>
   )
 }

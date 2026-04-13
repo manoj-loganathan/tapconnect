@@ -13,7 +13,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Plus, Trash, FileDown, Search, Lock, Unlock, Zap, CreditCard, Cpu, Filter } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { ArrowUpDown, ChevronDown, MoreHorizontal, Plus, Trash, FileDown, Search, Lock, Unlock, Zap, CreditCard, Cpu, Filter, ExternalLink } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -108,8 +109,9 @@ export type NfcCardData = {
     name: string
     email: string
     photo_url: string | null
+    taps: { id: string }[] | null
   } | null
-  taps: { id: string }[] | null
+  card_taps: { id: string }[] | null
 }
 
 const _cardDataCache: Record<string, NfcCardData[]> = {}
@@ -120,6 +122,7 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
   const [orgId, setOrgId] = React.useState<string | null>(null)
   const [orgColors, setOrgColors] = React.useState({ brand_color: '#0071e3', accent_color: '#0071e3' })
   const [loading, setLoading] = React.useState(!_cardDataCache[slug])
+  const router = useRouter()
 
   const [deactivateCardId, setDeactivateCardId] = React.useState<string | null>(null)
   const [deactivateReason, setDeactivateReason] = React.useState('')
@@ -150,7 +153,7 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
       
       const { data: cardData } = await supabase
         .from('nfc_cards')
-        .select(`*, employees (id, name, email, photo_url), taps (id)`)
+        .select(`*, employees (id, name, email, photo_url, taps (id)), card_taps:taps (id)`)
         .eq('org_id', orgData.id)
         .order('created_at', { ascending: false })
       
@@ -167,7 +170,7 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
   // Realtime — re-fetch on any card change (joins make patch-in-place harder)
   React.useEffect(() => {
     if (!orgId) return
-    const channel = supabase
+    const cardChannel = supabase
       .channel(`nfc_cards:${orgId}`)
       .on(
         'postgres_changes',
@@ -175,7 +178,20 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
         () => { fetchOrgAndData() }
       )
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+
+    const tapsChannel = supabase
+      .channel(`nfc_taps:${orgId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'tapconnect', table: 'taps', filter: `org_id=eq.${orgId}` },
+        () => { fetchOrgAndData() }
+      )
+      .subscribe()
+
+    return () => { 
+      supabase.removeChannel(cardChannel)
+      supabase.removeChannel(tapsChannel)
+    }
   }, [orgId, fetchOrgAndData])
 
   const handleToggleLock = async (id: string, currentLockStatus: boolean) => {
@@ -186,8 +202,8 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
 
   const handleActivate = async (id: string) => {
     const now = new Date().toISOString()
-    setData(prev => prev.map(c => c.id === id ? { ...c, status: 'active', programmed_at: now, deactivated_at: null, deactivation_reason: null } : c))
-    await supabase.from('nfc_cards').update({ status: 'active', programmed_at: now, deactivated_at: null, deactivation_reason: null }).eq('id', id)
+    setData(prev => prev.map(c => c.id === id ? { ...c, status: 'active', activated_at: now, deactivated_at: null, deactivation_reason: null } : c))
+    await supabase.from('nfc_cards').update({ status: 'active', activated_at: now, deactivated_at: null, deactivation_reason: null }).eq('id', id)
   }
 
   const handleDeactivate = async () => {
@@ -212,7 +228,8 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
         "Status": card.status || "N/A",
         "Locked": card.is_locked ? "Yes" : "No",
         "Programmed At": card.programmed_at ? format(new Date(card.programmed_at), 'PPP') : "Not Programmed",
-        "Total Taps": card.taps?.length || 0
+        "Activated At": card.activated_at ? format(new Date(card.activated_at), 'PPP') : "Not Activated",
+        "Total Taps": card.employees?.taps?.length || 0
     }))
     const ws = XLSX.utils.json_to_sheet(exportData)
     const wb = XLSX.utils.book_new()
@@ -234,7 +251,7 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
         card.chip_type || "N/A",
         card.status || "N/A",
         card.is_locked ? "Yes" : "No",
-        (card.taps?.length || 0).toString()
+        (card.employees?.taps?.length || 0).toString()
     ])
 
     autoTable(doc, {
@@ -399,7 +416,7 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
     },
     {
       id: "taps",
-      accessorFn: (row) => row.taps?.length || 0,
+      accessorFn: (row) => row.employees?.taps?.length || 0,
       header: ({ column }) => {
         return (
           <Button
@@ -561,9 +578,16 @@ export function NfcCardsDataTable({ slug }: { slug: string }) {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => router.push(`/sites/${slug}/admin/cards/${row.original.id}`)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} onClick={(e) => {
+                       // Prevent navigation if clicking select, status, security, or links
+                       const id = cell.column.id
+                       if (["select", "status", "is_locked", "card_url", "actions"].includes(id)) {
+                          e.stopPropagation()
+                       }
+                    }}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

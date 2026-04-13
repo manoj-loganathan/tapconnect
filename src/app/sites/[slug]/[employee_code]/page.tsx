@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ProfileClient from './components/ProfileClient'
+import DeactivatedView from './components/DeactivatedView'
+import { ShieldAlert, Mail } from 'lucide-react'
 
 export default async function EmployeeProfile({
   params,
@@ -30,7 +32,7 @@ export default async function EmployeeProfile({
   if (isUUID) {
     const { data } = await supabase
       .from('employees')
-      .select('*, card_links(*)')
+      .select('*, nfc_cards(id, status, is_locked)')
       .eq('org_id', org.id)
       .eq('id', employee_code)
       .single()
@@ -41,19 +43,56 @@ export default async function EmployeeProfile({
   if (!employee) {
     const { data } = await supabase
       .from('employees')
-      .select('*, card_links(*)')
+      .select('*, nfc_cards(id, status, is_locked)')
       .eq('org_id', org.id)
       .eq('employee_code', employee_code)
       .single()
     employee = data
   }
 
-  if (!employee || !employee.is_active) {
+  if (!employee) {
     return notFound()
   }
 
+  // Check for deactivation
+  // DeactivatedView only shows if employee is inactive OR all their cards are specifically 'deactivated'
+  const allCardsDeactivated = employee.nfc_cards && employee.nfc_cards.length > 0 
+    ? employee.nfc_cards.every((c: any) => c.status === 'deactivated')
+    : false
+
+  const isDeactivated = !employee.is_active || allCardsDeactivated
+
+  if (isDeactivated) {
+    return <DeactivatedView org={org} />
+  }
+
+  // Locked state: If all active cards are locked, or if no active cards exist to unlock it
+  const isLocked = employee.nfc_cards && employee.nfc_cards.length > 0
+    ? employee.nfc_cards.filter((c: any) => c.status === 'active').every((c: any) => c.is_locked)
+    : true // If no cards exist, we treat it as locked/read-only by default for security, or should we? 
+           // User says "locked state is for allowing user to edit", 
+           // so if no card, they can't "tap to unlock". I'll stick to true.
+
+  const activeCardId = employee.nfc_cards?.find((c: any) => c.status === 'active')?.id || null;
+
+  // 3. Fetch card_links assigned to this employee
+  // PostgREST doesn't join arrays automatically, so we fetch links for the org
+  // and filter where assigned_to contains employee.id
+  const { data: linksData } = await supabase
+    .from('card_links')
+    .select('*')
+    .eq('org_id', org.id)
+
+  const rawLinks = linksData || []
+  
+  // A link belongs to the employee if assigned_to contains their ID
+  const employeeLinks = rawLinks.filter(link => {
+    if (!link.assigned_to || link.assigned_to.length === 0) return false
+    return link.assigned_to.includes(employee.id)
+  })
+
   // Sort links by display_order
-  const sortedLinks = (employee.card_links || [])
+  const sortedLinks = employeeLinks
     .filter((l: any) => l.is_active)
     .sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
 
@@ -63,6 +102,8 @@ export default async function EmployeeProfile({
         employee={employee}
         org={org}
         links={sortedLinks}
+        isLocked={isLocked}
+        activeCardId={activeCardId}
       />
     </div>
   )

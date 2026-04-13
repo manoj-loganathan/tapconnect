@@ -373,7 +373,10 @@ export default function EmployeeDetailPage() {
                     <div className="flex flex-col items-center sm:items-start mt-2">
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{employee.name}</h1>
-                            {cardStatus === 'active' && <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 shadow-none border-blue-200">Active Card</Badge>}
+                            {cardStatus.toLowerCase() === 'active' && <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 shadow-none border-emerald-200">Active Card</Badge>}
+                            {cardStatus.toLowerCase() === 'deactivated' && <Badge variant="secondary" className="bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 shadow-none border-rose-200">Deactivated</Badge>}
+                            {cardStatus.toLowerCase() === 'requested' && <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 shadow-none border-blue-200">Requested</Badge>}
+                            {cardStatus.toLowerCase() === 'in progress' && <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 shadow-none border-indigo-200">In Progress</Badge>}
                         </div>
                         <p className="text-base text-muted-foreground mt-1 flex items-center gap-2">
                             <Briefcase className="w-4 h-4" />
@@ -491,143 +494,145 @@ export default function EmployeeDetailPage() {
                     </div>
                 </div>
 
-                {/* Employee Activity Feed */}
-                <div className="mt-8 pt-4 border-t">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-foreground tracking-tight">Employee Activity</h3>
-                    </div>
+                {/* Employee Activity Feed - Hide if card is not active/locked (transitional states) */}
+                {!(cardStatus.toLowerCase() === 'requested' || cardStatus.toLowerCase() === 'in progress') && (
+                    <div className="mt-8 pt-4 border-t">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-foreground tracking-tight">Employee Activity</h3>
+                        </div>
 
-                    <Tabs defaultValue="links" className="w-full">
-                        <TabsList variant="line" className="mb-4">
-                            <TabsTrigger value="links">Links</TabsTrigger>
-                            <TabsTrigger value="taps">Taps</TabsTrigger>
-                            <TabsTrigger value="leads">Leads</TabsTrigger>
-                        </TabsList>
+                        <Tabs defaultValue="links" className="w-full">
+                            <TabsList variant="line" className="mb-4">
+                                <TabsTrigger value="links">Links</TabsTrigger>
+                                <TabsTrigger value="taps">Taps</TabsTrigger>
+                                <TabsTrigger value="leads">Leads</TabsTrigger>
+                            </TabsList>
 
-                        <TabsContent value="links" className="m-0 focus-visible:outline-none">
-                            <div className="border rounded-2xl bg-card overflow-hidden divide-y">
-                                {links.length === 0 ? (
-                                    <div className="p-8 flex flex-col items-center justify-center text-center">
-                                        <LinkIcon className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                                        <h4 className="font-semibold text-foreground">No Active Links</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">No links have been configured for this organisation yet.</p>
-                                    </div>
-                                ) : (
-                                    links.map((link) => {
-                                        // OFF when assigned_to is null OR employee not in list
-                                        const assigned: string[] = link.assigned_to || []
-                                        const isAssigned = assigned.includes(employeeId)
+                            <TabsContent value="links" className="m-0 focus-visible:outline-none">
+                                <div className="border rounded-2xl bg-card overflow-hidden divide-y">
+                                    {links.length === 0 ? (
+                                        <div className="p-8 flex flex-col items-center justify-center text-center">
+                                            <LinkIcon className="w-10 h-10 text-muted-foreground/30 mb-3" />
+                                            <h4 className="font-semibold text-foreground">No Active Links</h4>
+                                            <p className="text-sm text-muted-foreground mt-1">No links have been configured for this organisation yet.</p>
+                                        </div>
+                                    ) : (
+                                        links.map((link) => {
+                                            // OFF when assigned_to is null OR employee not in list
+                                            const assigned: string[] = link.assigned_to || []
+                                            const isAssigned = assigned.includes(employeeId)
 
-                                        return (
-                                            <div key={link.id} className="p-4 flex items-center justify-between transition-colors hover:bg-muted/30">
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
-                                                        {getPlatformIcon(link.platform)}
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="font-semibold text-sm text-foreground truncate capitalize">{link.label || link.platform}</span>
-                                                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary transition-colors truncate mt-0.5">{link.url}</a>
-                                                    </div>
-                                                </div>
-                                                <div className="pl-4 flex items-center gap-2 shrink-0">
-                                                    <span className={`text-[11px] font-semibold uppercase tracking-wider ${isAssigned ? 'text-emerald-500' : 'text-muted-foreground/40'}`}>
-                                                        {isAssigned ? 'Enabled' : 'Disabled'}
-                                                    </span>
-                                                    <Switch
-                                                        checked={isAssigned}
-                                                        onCheckedChange={() => handleToggleLink(link)}
-                                                        className="data-[state=checked]:bg-emerald-500"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )
-                                    })
-                                )}
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="taps" className="m-0 focus-visible:outline-none">
-                            <div className="border rounded-2xl bg-card overflow-hidden">
-                                {loadingAnalytics ? (
-                                    <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading taps...</div>
-                                ) : activityFeed.filter(f => f.type === 'tap').length === 0 ? (
-                                    <div className="p-8 flex flex-col items-center justify-center text-center">
-                                        <MousePointerClick className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                                        <h4 className="font-semibold text-foreground">No Taps</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">No NFC scans recorded on {date?.from ? (date.to && date.from.getTime() !== date.to.getTime() ? `${format(date.from, "LLL dd, y")} to ${format(date.to, "LLL dd, y")}` : format(date.from, "LLL dd, y")) : 'the selected dates'}.</p>
-                                    </div>
-                                ) : (
-                                    activityFeed.filter(f => f.type === 'tap').map((item, idx, arr) => {
-                                        const timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                        const cityStr = item.data.city || 'Unknown Location'
-                                        const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(cityStr)}&t=&z=13&ie=UTF8&iwloc=&output=embed`
-
-                                        return (
-                                            <div key={item.data.id} className={cn("p-5 flex gap-4 transition-colors hover:bg-muted/30", idx !== arr.length - 1 && "border-b")}>
-                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-1">
-                                                    <MousePointerClick className="w-4 h-4" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-sm font-bold flex justify-between items-center whitespace-nowrap">
-                                                        <span>NFC Card Tapped</span>
-                                                        <span className="text-xs font-normal text-muted-foreground ml-2">{timeStr}</span>
-                                                    </h4>
-                                                    <p className="text-sm text-muted-foreground mt-0.5">Scanned on {item.data.device || 'a device'} running {item.data.os || 'unknown OS'}.</p>
-
-                                                    {item.data.city && (
-                                                        <div className="mt-4 h-[180px] w-full rounded-xl overflow-hidden ring-1 ring-border/50 shadow-sm relative z-0">
-                                                            <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm text-xs px-2.5 py-1.5 rounded-md shadow-sm z-10 flex items-center font-bold text-foreground ring-1 ring-border/50">
-                                                                <MapPin className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> {cityStr}
-                                                            </div>
-                                                            <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={mapUrl} allowFullScreen />
+                                            return (
+                                                <div key={link.id} className="p-4 flex items-center justify-between transition-colors hover:bg-muted/30">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                                            {getPlatformIcon(link.platform)}
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )
-                                    })
-                                )}
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="leads" className="m-0 focus-visible:outline-none">
-                            <div className="border rounded-2xl bg-card overflow-hidden">
-                                {loadingAnalytics ? (
-                                    <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading leads...</div>
-                                ) : activityFeed.filter(f => f.type === 'lead').length === 0 ? (
-                                    <div className="p-8 flex flex-col items-center justify-center text-center">
-                                        <UserPlus className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                                        <h4 className="font-semibold text-foreground">No Leads</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">No leads captured on {date?.from ? (date.to && date.from.getTime() !== date.to.getTime() ? `${format(date.from, "LLL dd, y")} to ${format(date.to, "LLL dd, y")}` : format(date.from, "LLL dd, y")) : 'the selected dates'}.</p>
-                                    </div>
-                                ) : (
-                                    activityFeed.filter(f => f.type === 'lead').map((item, idx, arr) => {
-                                        const timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-
-                                        return (
-                                            <div key={item.data.id} className={cn("p-5 flex gap-4 transition-colors hover:bg-muted/30", idx !== arr.length - 1 && "border-b")}>
-                                                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 mt-1">
-                                                    <UserPlus className="w-4 h-4" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-sm font-bold flex justify-between items-center whitespace-nowrap">
-                                                        <span>New Lead Captured</span>
-                                                        <span className="text-xs font-normal text-muted-foreground ml-2">{timeStr}</span>
-                                                    </h4>
-                                                    <div className="text-sm text-muted-foreground mt-1.5 space-y-1">
-                                                        <p><strong className="text-foreground">{item.data.visitor_name || 'Anonymous'}</strong> submitted contact information.</p>
-                                                        {item.data.visitor_email && <p className="text-xs flex items-center"><Mail className="w-3 h-3 mr-1.5" /> {item.data.visitor_email}</p>}
-                                                        {item.data.visitor_company && <p className="text-xs flex items-center"><Briefcase className="w-3 h-3 mr-1.5" /> {item.data.visitor_company}</p>}
+                                                        <div className="flex flex-col min-w-0">
+                                                            <span className="font-semibold text-sm text-foreground truncate capitalize">{link.label || link.platform}</span>
+                                                            <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary transition-colors truncate mt-0.5">{link.url}</a>
+                                                        </div>
+                                                    </div>
+                                                    <div className="pl-4 flex items-center gap-2 shrink-0">
+                                                        <span className={`text-[11px] font-semibold uppercase tracking-wider ${isAssigned ? 'text-emerald-500' : 'text-muted-foreground/40'}`}>
+                                                            {isAssigned ? 'Enabled' : 'Disabled'}
+                                                        </span>
+                                                        <Switch
+                                                            checked={isAssigned}
+                                                            onCheckedChange={() => handleToggleLink(link)}
+                                                            className="data-[state=checked]:bg-emerald-500"
+                                                        />
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )
-                                    })
-                                )}
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                </div>
+                                            )
+                                        })
+                                    )}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="taps" className="m-0 focus-visible:outline-none">
+                                <div className="border rounded-2xl bg-card overflow-hidden">
+                                    {loadingAnalytics ? (
+                                        <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading taps...</div>
+                                    ) : activityFeed.filter(f => f.type === 'tap').length === 0 ? (
+                                        <div className="p-8 flex flex-col items-center justify-center text-center">
+                                            <MousePointerClick className="w-10 h-10 text-muted-foreground/30 mb-3" />
+                                            <h4 className="font-semibold text-foreground">No Taps</h4>
+                                            <p className="text-sm text-muted-foreground mt-1">No NFC scans recorded on {date?.from ? (date.to && date.from.getTime() !== date.to.getTime() ? `${format(date.from, "LLL dd, y")} to ${format(date.to, "LLL dd, y")}` : format(date.from, "LLL dd, y")) : 'the selected dates'}.</p>
+                                        </div>
+                                    ) : (
+                                        activityFeed.filter(f => f.type === 'tap').map((item, idx, arr) => {
+                                            const timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            const cityStr = item.data.city || 'Unknown Location'
+                                            const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(cityStr)}&t=&z=13&ie=UTF8&iwloc=&output=embed`
+
+                                            return (
+                                                <div key={item.data.id} className={cn("p-5 flex gap-4 transition-colors hover:bg-muted/30", idx !== arr.length - 1 && "border-b")}>
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-1">
+                                                        <MousePointerClick className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-sm font-bold flex justify-between items-center whitespace-nowrap">
+                                                            <span>NFC Card Tapped</span>
+                                                            <span className="text-xs font-normal text-muted-foreground ml-2">{timeStr}</span>
+                                                        </h4>
+                                                        <p className="text-sm text-muted-foreground mt-0.5">Scanned on {item.data.device || 'a device'} running {item.data.os || 'unknown OS'}.</p>
+
+                                                        {item.data.city && (
+                                                            <div className="mt-4 h-[180px] w-full rounded-xl overflow-hidden ring-1 ring-border/50 shadow-sm relative z-0">
+                                                                <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm text-xs px-2.5 py-1.5 rounded-md shadow-sm z-10 flex items-center font-bold text-foreground ring-1 ring-border/50">
+                                                                    <MapPin className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> {cityStr}
+                                                                </div>
+                                                                <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={mapUrl} allowFullScreen />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })
+                                    )}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="leads" className="m-0 focus-visible:outline-none">
+                                <div className="border rounded-2xl bg-card overflow-hidden">
+                                    {loadingAnalytics ? (
+                                        <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading leads...</div>
+                                    ) : activityFeed.filter(f => f.type === 'lead').length === 0 ? (
+                                        <div className="p-8 flex flex-col items-center justify-center text-center">
+                                            <UserPlus className="w-10 h-10 text-muted-foreground/30 mb-3" />
+                                            <h4 className="font-semibold text-foreground">No Leads</h4>
+                                            <p className="text-sm text-muted-foreground mt-1">No leads captured on {date?.from ? (date.to && date.from.getTime() !== date.to.getTime() ? `${format(date.from, "LLL dd, y")} to ${format(date.to, "LLL dd, y")}` : format(date.from, "LLL dd, y")) : 'the selected dates'}.</p>
+                                        </div>
+                                    ) : (
+                                        activityFeed.filter(f => f.type === 'lead').map((item, idx, arr) => {
+                                            const timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+                                            return (
+                                                <div key={item.data.id} className={cn("p-5 flex gap-4 transition-colors hover:bg-muted/30", idx !== arr.length - 1 && "border-b")}>
+                                                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 mt-1">
+                                                        <UserPlus className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-sm font-bold flex justify-between items-center whitespace-nowrap">
+                                                            <span>New Lead Captured</span>
+                                                            <span className="text-xs font-normal text-muted-foreground ml-2">{timeStr}</span>
+                                                        </h4>
+                                                        <div className="text-sm text-muted-foreground mt-1.5 space-y-1">
+                                                            <p><strong className="text-foreground">{item.data.visitor_name || 'Anonymous'}</strong> submitted contact information.</p>
+                                                            {item.data.visitor_email && <p className="text-xs flex items-center"><Mail className="w-3 h-3 mr-1.5" /> {item.data.visitor_email}</p>}
+                                                            {item.data.visitor_company && <p className="text-xs flex items-center"><Briefcase className="w-3 h-3 mr-1.5" /> {item.data.visitor_company}</p>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })
+                                    )}
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+                )}
             </div>
         )
     }

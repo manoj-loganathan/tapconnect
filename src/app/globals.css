@@ -39,11 +39,11 @@
 
   --radius: 0.375rem;
 
-  --chart-1: #007AFF;
-  --chart-2: #007AFF;
-  --chart-3: #007AFF;
-  --chart-4: #007AFF;
-  --chart-5: #007AFF;
+  --chart-1: #2563EB;   /* iOS - Deep Blue */
+  --chart-2: #60A5FA;   /* Android - Sky Blue */
+  --chart-3: #1D4ED8;   /* Windows - Med Blue */
+  --chart-4: #93C5FD;   /* Mac - Light Blue */
+  --chart-5: #3B82F6;   /* Other - Mid Blue */
 
   --sidebar: #f8f9fa;
   --sidebar-foreground: #1c1c1c;
@@ -85,11 +85,11 @@
   --input: #3e3e3e;
   --ring: #007AFF;
   
-  --chart-1: #007AFF;
-  --chart-2: #007AFF;
-  --chart-3: #007AFF;
-  --chart-4: #007AFF;
-  --chart-5: #007AFF;
+  --chart-1: #2563EB;   /* iOS - Deep Blue */
+  --chart-2: #60A5FA;   /* Android - Sky Blue */
+  --chart-3: #1D4ED8;   /* Windows - Med Blue */
+  --chart-4: #93C5FD;   /* Mac - Light Blue */
+  --chart-5: #3B82F6;   /* Other - Mid Blue */
   
   --sidebar: #1c1c1c;
   --sidebar-foreground: #ededed;
