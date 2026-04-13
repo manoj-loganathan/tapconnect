@@ -101,6 +101,7 @@ export type NfcCardData = {
   status: string
   is_locked: boolean
   programmed_at: string | null
+  activated_at: string | null
   deactivated_at: string | null
   deactivation_reason: string | null
   card_url: string | null
