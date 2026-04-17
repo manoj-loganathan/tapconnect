@@ -25,9 +25,7 @@ function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase()
 }
 
-const AVATAR_COLORS = [
-  'bg-[#2563EB]', 'bg-[#60A5FA]', 'bg-[#1D4ED8]', 'bg-[#93C5FD]', 'bg-[#3B82F6]'
-]
+
 
 export default function DashboardHome() {
   const params = useParams()
@@ -240,7 +238,7 @@ export default function DashboardHome() {
               ? Array(4).fill(0).map((_, i) => <div key={i} className="w-10 h-10 rounded-full bg-muted/50 animate-pulse border-2 border-card" />)
               : topPerformers.slice(0, 5).map((emp, i) => (
                 <div key={emp.id} title={emp.name}
-                  className={`w-10 h-10 rounded-full border-2 border-card flex items-center justify-center text-[11px] text-white font-bold shrink-0 overflow-hidden ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}>
+                  className={`w-10 h-10 rounded-full border-2 border-card flex items-center justify-center text-[11px] text-primary-foreground font-bold shrink-0 overflow-hidden bg-primary`}>
                   {emp.photo_url
                     ? <img src={emp.photo_url} alt={emp.name} className="w-full h-full object-cover" />
                     : getInitials(emp.name)}
@@ -439,7 +437,7 @@ export default function DashboardHome() {
                       >
                         <td className="px-6 py-3">
                           <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0 overflow-hidden bg-primary`}>
                               {emp.photo_url
                                 ? <img src={emp.photo_url} alt={emp.name} className="w-full h-full object-cover" />
                                 : getInitials(emp.name)}
@@ -513,7 +511,7 @@ export default function DashboardHome() {
                 departments.map((dept, i) => {
                   const max = departments[0]?.taps || 1
                   const pct = Math.max(4, Math.round((dept.taps / max) * 100))
-                  const colors = ['bg-[#2563EB]', 'bg-[#60A5FA]', 'bg-[#93C5FD]', 'bg-[#BFDBFE]', 'bg-[#DBEAFE]']
+                  const colors = ['bg-chart-1', 'bg-chart-2', 'bg-chart-3', 'bg-chart-4', 'bg-chart-5']
                   return (
                     <div key={dept.name} className="space-y-1.5">
                       <div className="flex justify-between items-center text-sm">
@@ -556,7 +554,7 @@ export default function DashboardHome() {
                 <div className="divide-y divide-border/30">
                   {recentTaps.map((tap: any, i) => (
                     <div key={tap.id} className="flex items-center gap-3 px-5 py-3 hover:bg-muted/20 transition-colors">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 overflow-hidden ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}>
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-primary-foreground text-[10px] font-bold shrink-0 overflow-hidden bg-primary`}>
                         {tap.employees?.photo_url
                           ? <img src={tap.employees.photo_url} alt="" className="w-full h-full object-cover" />
                           : getInitials(tap.employees?.name ?? '?')}

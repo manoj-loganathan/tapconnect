@@ -97,6 +97,7 @@ export type LeadData = {
   visitor_phone: string | null
   status: string | null
   captured_at: string | null
+  followup_date: string | null
   employees: { name: string } | null
 }
 
@@ -173,7 +174,8 @@ export function LeadsDataTable({ slug }: { slug: string }) {
             "Email": d.visitor_email || d.visitor_phone || "-",
             "Company": d.visitor_company || "-",
             "Captured By": d.employees?.name || "-",
-            "Date": d.captured_at ? format(new Date(d.captured_at), "MMM d, yyyy") : "-",
+            "Captured Date": d.captured_at ? format(new Date(d.captured_at), "MMM d, yyyy") : "-",
+            "Follow-up Date": d.followup_date ? format(new Date(d.followup_date), "MMM d, yyyy") : "-",
             "Status": d.status?.toUpperCase() || "-"
         }
     })
@@ -187,15 +189,15 @@ export function LeadsDataTable({ slug }: { slug: string }) {
     const doc = new jsPDF()
     doc.text("Leads Directory", 14, 15)
 
-    const tableColumn = ["Name", "Email", "Company", "Captured By", "Date", "Status"]
+    const tableColumn = ["Name", "Email", "Company", "Captured", "Follow-up", "Status"]
     const tableRows = table.getFilteredRowModel().rows.map(row => {
         const d = row.original
         return [
             d.visitor_name || "-",
             d.visitor_email || d.visitor_phone || "-",
             d.visitor_company || "-",
-            d.employees?.name || "-",
-            d.captured_at ? format(new Date(d.captured_at), "MMM d, yyyy") : "-",
+            `${d.employees?.name || "-"} (${d.captured_at ? format(new Date(d.captured_at), "MMM d") : "-"})`,
+            d.followup_date ? format(new Date(d.followup_date), "MMM d, yyyy") : "-",
             d.status?.toUpperCase() || "-"
         ]
     })
@@ -273,12 +275,6 @@ export function LeadsDataTable({ slug }: { slug: string }) {
       cell: ({ row }) => <div>{row.getValue("visitor_company") || "—"}</div>,
     },
     {
-      id: "captured_by",
-      accessorFn: (row) => row.employees?.name,
-      header: "Captured By",
-      cell: ({ row }) => <div>{row.getValue("captured_by") || "—"}</div>,
-    },
-    {
       accessorKey: "captured_at",
       header: ({ column }) => {
         return (
@@ -286,15 +282,45 @@ export function LeadsDataTable({ slug }: { slug: string }) {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Date
+            Captured
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )
       },
       cell: ({ row }) => {
           const dateStr = row.getValue("captured_at") as string
-          if (!dateStr) return <span className="text-muted-foreground">—</span>
-          return <span className="text-muted-foreground sm:pl-4 flex items-center h-full">{format(new Date(dateStr), "MMM d, yyyy")}</span>
+          const empName = row.original.employees?.name || "Unknown"
+          return (
+              <div className="flex flex-col sm:pl-4 justify-center h-full">
+                  <span className="font-medium text-foreground">{empName}</span>
+                  {dateStr && <span className="text-xs text-muted-foreground">{format(new Date(dateStr), "MMM d, yyyy")}</span>}
+              </div>
+          )
+      },
+    },
+    {
+      accessorKey: "followup_date",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Follow-up
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) => {
+          const dateStr = row.getValue("followup_date") as string
+          if (!dateStr) return <span className="text-muted-foreground sm:pl-4 italic">—</span>
+          return (
+             <div className="sm:pl-4 flex items-center h-full">
+               <span className="font-semibold text-foreground bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full text-xs truncate max-w-full">
+                  {format(new Date(dateStr), "MMM d, yyyy")}
+               </span>
+             </div>
+          )
       },
     },
     {

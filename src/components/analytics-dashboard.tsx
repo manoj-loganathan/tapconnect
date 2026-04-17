@@ -468,7 +468,7 @@ export function AnalyticsDashboard({ slug }: { slug: string }) {
                   : "?"
                 // Cycle through blue shades for avatar backgrounds
                 const avatarColors = [
-                  "bg-[#2563EB]", "bg-[#60A5FA]", "bg-[#1D4ED8]", "bg-[#93C5FD]", "bg-[#3B82F6]"
+                  "bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5"
                 ]
                 const avatarBg = avatarColors[i % avatarColors.length]
 
@@ -521,7 +521,7 @@ export function AnalyticsDashboard({ slug }: { slug: string }) {
           </h3>
           <div className="flex-1 flex flex-col justify-center space-y-5">
             {(() => {
-              const COLORS = ['#2563EB', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE'];
+              const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
               const totalDeptTaps = deptDistribution.length > 0 ? deptDistribution.reduce((acc, curr) => acc + curr[1], 0) : 0;
               const hasData = deptDistribution.length > 0;
 
@@ -659,7 +659,7 @@ export function AnalyticsDashboard({ slug }: { slug: string }) {
           </h3>
           <div className="flex-1 flex flex-col items-center gap-4">
             {(() => {
-              const COLORS = ['#2563EB', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE'];
+              const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
               const totalGeoTaps = cityDistribution.length > 0 ? cityDistribution.reduce((acc, curr) => acc + curr[1], 0) : 0;
               const hasData = cityDistribution.length > 0;
               const pieData = hasData

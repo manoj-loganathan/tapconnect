@@ -24,7 +24,11 @@ import { ThemeToggle } from "@/components/ThemeToggle"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit2, Save, X, Settings2 } from 'lucide-react'
+import { Edit2, Save, X, Settings2, Calendar as CalendarIcon } from 'lucide-react'
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 import DeactivatedView from './DeactivatedView'
 
 export default function ProfileClient({ 
@@ -50,7 +54,7 @@ export default function ProfileClient({
   const [liveLinks, setLiveLinks] = useState(links)
 
   // Form State
-  const [form, setForm] = useState({ name: '', email: '', phone: '', company: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', followup_date: '' })
 
   // Edit State
   const [isEditing, setIsEditing] = useState(false)
@@ -194,14 +198,25 @@ END:VCARD`
           visitor_email: form.email,
           visitor_phone: form.phone,
           visitor_company: form.company,
+          followup_date: form.followup_date || null,
           status: 'new'
        })
        if (error) throw error
+       
        setLeadSent(true)
+       
+       if (liveEmployee.phone) {
+         const phoneBase = liveEmployee.phone.replace(/[^0-9]/g, '');
+         const msg = `Hi ${liveEmployee.name.split(' ')[0]}!\nI just shared my contact details via your digital profile.\n\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}${form.company ? `\nCompany: ${form.company}` : ''}${form.followup_date ? `\nFollow-up Date: ${format(new Date(form.followup_date), 'PPP')}` : ''}`;
+         const encodedMsg = encodeURIComponent(msg);
+         const waUrl = `https://wa.me/${phoneBase}?text=${encodedMsg}`;
+         window.location.href = waUrl;
+       }
+
        setTimeout(() => {
          setShowLeadForm(false)
          setLeadSent(false)
-         setForm({ name: '', email: '', phone: '', company: '' })
+         setForm({ name: '', email: '', phone: '', company: '', followup_date: '' })
        }, 2000)
     } catch (err) {
        alert('Failed to send details. Please try again.')
@@ -402,27 +417,74 @@ END:VCARD`
 
          {/* 6. Tabs Variant="Line" Architecture scales for tablets */}
          <div className="mt-8 md:mt-12 px-5 md:px-8 relative h-full w-full max-w-md md:max-w-2xl mx-auto">
-             <Tabs defaultValue="overview" className="w-full">
+             <Tabs defaultValue="reports" className="w-full">
                 
                 <TabsList variant="line" className="mb-4 md:mb-8">
-                   <TabsTrigger value="overview" className="text-xs md:text-sm">Feeds</TabsTrigger>
-                   <TabsTrigger value="analytics" className="text-xs md:text-sm">Links</TabsTrigger>
                    <TabsTrigger value="reports" className="text-xs md:text-sm">Forms</TabsTrigger>
+                   <TabsTrigger value="analytics" className="text-xs md:text-sm">Links</TabsTrigger>
+                   <TabsTrigger value="overview" className="text-xs md:text-sm">Feeds</TabsTrigger>
                 </TabsList>
 
-                {/* Feeds Tab */}
-                <TabsContent value="overview" className="m-0 focus-visible:outline-none focus:outline-none grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                   <div className="w-full bg-card rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm border border-border/50 cursor-pointer hover:shadow-md transition-shadow">
-                      <div className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-amber-500 mb-2">Company Update</div>
-                      <h3 className="font-bold text-lg md:text-xl text-foreground leading-snug mb-2">Latest property launches gracefully completed in {org.name}</h3>
-                      <p className="text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-2">We are incredibly proud to announce the next phase of luxury developments bridging the entire sector towards perfection.</p>
-                   </div>
-                   
-                   <div className="w-full bg-card rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm border border-border/50 cursor-pointer hover:shadow-md transition-shadow">
-                      <div className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-primary mb-2">Event</div>
-                      <h3 className="font-bold text-lg md:text-xl text-foreground leading-snug mb-2">Annual Keynote Presentation {new Date().getFullYear()}</h3>
-                      <p className="text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-2">Join us across our headquarters to review exactly what the roadmap entitles for our clients everywhere.</p>
-                   </div>
+                {/* Forms Tab */}
+                <TabsContent value="reports" className="m-0 focus-visible:outline-none focus:outline-none pt-2">
+                   {leadSent ? (
+                     <div className="py-12 flex flex-col items-center text-center bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border/50">
+                        <CheckCircle2 className="w-12 h-12 md:w-16 md:h-16 text-emerald-500 mb-3" />
+                        <h3 className="text-xl md:text-2xl font-black text-foreground mb-1">Details Sent!</h3>
+                        <p className="text-xs md:text-sm font-semibold text-muted-foreground">I will get in touch with you shortly.</p>
+                     </div>
+                   ) : (
+                     <form onSubmit={handleLeadSubmit} className="flex flex-col gap-3 pb-8 bg-card p-6 md:p-10 rounded-3xl md:rounded-[2.5rem] shadow-sm border border-border/50">
+                        <div className="mb-2 md:mb-6 text-center">
+                            <h3 className="text-[17px] md:text-2xl font-bold tracking-tight text-foreground mb-1">{`Drop ${liveEmployee.name?.split(' ')[0]} a note`}</h3>
+                            <p className="text-[13px] md:text-base font-medium text-muted-foreground">Fill out this quick form securely underneath to instantly engage.</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <input type="text" id="name" name="name" placeholder="Full Name" autoComplete="name" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full bg-background border border-border p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base focus:bg-card focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground" />
+                            <input type="email" id="email" name="email" placeholder="Email Address" autoComplete="email" required value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full bg-background border border-border p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base focus:bg-card focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground" />
+                            <input type="tel" id="tel" name="tel" placeholder="Phone Number" autoComplete="tel" required value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="w-full bg-background border border-border p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base focus:bg-card focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground" />
+                            <input type="text" id="organization" name="organization" placeholder="Company" autoComplete="organization" value={form.company} onChange={e => setForm({...form, company: e.target.value})} className="w-full bg-background border border-border p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base focus:bg-card focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground" />
+
+                            <div className="md:col-span-2 relative">
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full bg-background border border-border px-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base hover:bg-muted/50 focus:bg-card focus:ring-1 focus:ring-primary transition-all flex items-center justify-between min-h-[56px] md:min-h-[64px]",
+                                        !form.followup_date && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {form.followup_date ? (
+                                        <span className="text-foreground">{format(new Date(form.followup_date), "PPP")}</span>
+                                      ) : (
+                                        <span>Pick a follow up date</span>
+                                      )}
+                                      <CalendarIcon className="h-5 w-5 opacity-50 ml-auto" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0 z-[100]" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={form.followup_date ? new Date(form.followup_date) : undefined}
+                                      onSelect={(date) => setForm({...form, followup_date: date ? format(date, 'yyyy-MM-dd') : ''})}
+                                      disabled={(date) => {
+                                        const today = new Date();
+                                        today.setHours(0,0,0,0);
+                                        return date < today;
+                                      }}
+                                      initialFocus
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                            </div>
+                        </div>
+                        <button type="submit" disabled={sendingLead} className="w-full bg-primary text-primary-foreground font-bold py-4 md:py-5 mt-4 rounded-xl md:rounded-2xl shadow-md flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all text-base md:text-lg">
+                           {sendingLead ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Details directly'}
+                        </button>
+                     </form>
+                   )}
                 </TabsContent>
 
                 {/* Links Tab */}
@@ -458,31 +520,19 @@ END:VCARD`
                    )}
                 </TabsContent>
 
-                {/* Forms Tab */}
-                <TabsContent value="reports" className="m-0 focus-visible:outline-none focus:outline-none pt-2">
-                   {leadSent ? (
-                     <div className="py-12 flex flex-col items-center text-center bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border/50">
-                        <CheckCircle2 className="w-12 h-12 md:w-16 md:h-16 text-emerald-500 mb-3" />
-                        <h3 className="text-xl md:text-2xl font-black text-foreground mb-1">Details Sent!</h3>
-                        <p className="text-xs md:text-sm font-semibold text-muted-foreground">I will get in touch with you shortly.</p>
-                     </div>
-                   ) : (
-                     <form onSubmit={handleLeadSubmit} className="flex flex-col gap-3 pb-8 bg-card p-6 md:p-10 rounded-3xl md:rounded-[2.5rem] shadow-sm border border-border/50">
-                        <div className="mb-2 md:mb-6 text-center">
-                            <h3 className="text-[17px] md:text-2xl font-bold tracking-tight text-foreground mb-1">{`Drop ${liveEmployee.name?.split(' ')[0]} a note`}</h3>
-                            <p className="text-[13px] md:text-base font-medium text-muted-foreground">Fill out this quick form securely underneath to instantly engage.</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <input type="text" placeholder="Full Name" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full bg-background border border-border p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base focus:bg-card focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground" />
-                            <input type="email" placeholder="Email Address" required value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full bg-background border border-border p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base focus:bg-card focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground" />
-                            <input type="tel" placeholder="Phone Number" required value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="w-full bg-background border border-border p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base focus:bg-card focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground" />
-                            <input type="text" placeholder="Company" value={form.company} onChange={e => setForm({...form, company: e.target.value})} className="w-full bg-background border border-border p-4 md:p-5 rounded-xl md:rounded-2xl outline-none font-semibold text-[15px] md:text-base focus:bg-card focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground" />
-                        </div>
-                        <button type="submit" disabled={sendingLead} className="w-full bg-primary text-primary-foreground font-bold py-4 md:py-5 mt-2 rounded-xl md:rounded-2xl shadow-md flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all text-base md:text-lg">
-                           {sendingLead ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Details directly'}
-                        </button>
-                     </form>
-                   )}
+                {/* Feeds Tab */}
+                <TabsContent value="overview" className="m-0 focus-visible:outline-none focus:outline-none grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                   <div className="w-full bg-card rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm border border-border/50 cursor-pointer hover:shadow-md transition-shadow">
+                      <div className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-amber-500 mb-2">Company Update</div>
+                      <h3 className="font-bold text-lg md:text-xl text-foreground leading-snug mb-2">Latest property launches gracefully completed in {org.name}</h3>
+                      <p className="text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-2">We are incredibly proud to announce the next phase of luxury developments bridging the entire sector towards perfection.</p>
+                   </div>
+                   
+                   <div className="w-full bg-card rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm border border-border/50 cursor-pointer hover:shadow-md transition-shadow">
+                      <div className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-primary mb-2">Event</div>
+                      <h3 className="font-bold text-lg md:text-xl text-foreground leading-snug mb-2">Annual Keynote Presentation {new Date().getFullYear()}</h3>
+                      <p className="text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-2">Join us across our headquarters to review exactly what the roadmap entitles for our clients everywhere.</p>
+                   </div>
                 </TabsContent>
 
              </Tabs>

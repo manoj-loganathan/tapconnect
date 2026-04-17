@@ -443,7 +443,7 @@ export default function EmployeeDetailPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="border rounded-xl p-4 flex flex-col justify-between bg-card hover:bg-accent/10 transition-colors">
                             <span className="text-xs font-medium text-muted-foreground">Total Taps</span>
-                            <span className="text-2xl font-bold mt-2 text-blue-600">{tapCount}</span>
+                            <span className="text-2xl font-bold mt-2 text-primary">{tapCount}</span>
                         </div>
                         <div className="border rounded-xl p-4 flex flex-col justify-between bg-card hover:bg-accent/10 transition-colors">
                             <span className="text-xs font-medium text-muted-foreground">Leads Captured</span>
@@ -568,7 +568,7 @@ export default function EmployeeDetailPage() {
 
                                             return (
                                                 <div key={item.data.id} className={cn("p-5 flex gap-4 transition-colors hover:bg-muted/30", idx !== arr.length - 1 && "border-b")}>
-                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-1">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-1">
                                                         <MousePointerClick className="w-4 h-4" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
@@ -581,7 +581,7 @@ export default function EmployeeDetailPage() {
                                                         {item.data.city && (
                                                             <div className="mt-4 h-[180px] w-full rounded-xl overflow-hidden ring-1 ring-border/50 shadow-sm relative z-0">
                                                                 <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm text-xs px-2.5 py-1.5 rounded-md shadow-sm z-10 flex items-center font-bold text-foreground ring-1 ring-border/50">
-                                                                    <MapPin className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> {cityStr}
+                                                                    <MapPin className="w-3.5 h-3.5 mr-1.5 text-primary" /> {cityStr}
                                                                 </div>
                                                                 <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={mapUrl} allowFullScreen />
                                                             </div>
@@ -671,18 +671,18 @@ export default function EmployeeDetailPage() {
                             filteredEmployees.map(emp => {
                                 const isActive = emp.id === employeeId
                                 return (
-                                    <div
+                                        <div
                                         key={emp.id}
                                         onClick={() => router.push(`/sites/${slug}/admin/employees/${emp.id}`)}
                                         className={cn(
                                             "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all",
-                                            isActive ? "bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 border shadow-sm" : "hover:bg-muted border border-transparent"
+                                            isActive ? "bg-primary/5 border-primary/20 border shadow-sm" : "hover:bg-muted border border-transparent"
                                         )}
                                     >
                                         {emp.photo_url ? (
-                                            <img src={emp.photo_url} className={cn("w-10 h-10 rounded-full object-cover shrink-0 ring-1", isActive ? "ring-blue-300" : "ring-border")} />
+                                            <img src={emp.photo_url} className={cn("w-10 h-10 rounded-full object-cover shrink-0 ring-1", isActive ? "ring-primary/40" : "ring-border")} />
                                         ) : (
-                                            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ring-1", isActive ? "bg-blue-100 text-blue-700 ring-blue-300 dark:bg-blue-900 dark:text-blue-300" : "bg-primary/5 text-muted-foreground ring-border")}>
+                                            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ring-1", isActive ? "bg-primary/10 text-primary ring-primary/40" : "bg-primary/5 text-muted-foreground ring-border")}>
                                                 {emp.name.substring(0, 2).toUpperCase()}
                                             </div>
                                         )}

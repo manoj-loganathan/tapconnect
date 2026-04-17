@@ -6,11 +6,8 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/s
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Inter } from 'next/font/google'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { AdminBreadcrumb } from '@/components/admin-breadcrumb'
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export default async function AdminLayout({
   children,
@@ -33,7 +30,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className={`${inter.className} ${inter.variable} font-sans antialiased text-[0.95rem]`}>
+    <div className="font-sans antialiased text-[0.95rem]">
       <SidebarProvider>
         <TooltipProvider>
           <AppSidebar org={org} />

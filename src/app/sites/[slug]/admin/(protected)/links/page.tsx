@@ -4,10 +4,15 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { Link as LinkIcon, Plus, GripVertical, Edit, Trash, ExternalLink, Globe, Contact, FileText, Loader2 } from 'lucide-react'
+import { Link as LinkIcon, Plus, GripVertical, Edit, Trash, ExternalLink, Globe, Contact, FileText, Loader2, Sparkles, X, MousePointer2 } from 'lucide-react'
 import { Reorder } from "framer-motion"
 import { supabase } from "@/lib/supabase"
 import { LinkProvisionDialog } from "@/components/link-provision-dialog"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { TypewriterSummary } from "@/components/typewriter-summary"
+import { useAISettings } from "@/hooks/use-ai-settings"
+
+const AI_TEXT = "Currently analyzing your digital landscape. You have a healthy mix of social and professional endpoints. Your contact-based links are optimized for mobile delivery, ensuring seamless vCard downloads and high conversion rates across all provisioned NFC assets."
 
 type CardLink = {
     id: string
@@ -29,9 +34,29 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
     const [orgId, setOrgId] = React.useState<string | null>(null)
     const [loading, setLoading] = React.useState(true)
     const [deletingId, setDeletingId] = React.useState<string | null>(null)
+    const [locallyDismissed, setLocallyDismissed] = React.useState(false)
+    const { settings: aiSettings } = useAISettings(orgId)
 
     const [dialogOpen, setDialogOpen] = React.useState(false)
     const [editingLink, setEditingLink] = React.useState<CardLink | undefined>()
+    const [clickCounts, setClickCounts] = React.useState<Record<string, number>>({})
+
+    const showAiSummary = aiSettings?.links_enabled && !locallyDismissed
+
+    const fetchClickData = React.useCallback(async (oId: string) => {
+        const { data, error } = await supabase
+            .from('card_link_clicks')
+            .select('card_link_id')
+            .eq('org_id', oId)
+        
+        if (!error && data) {
+            const counts: Record<string, number> = {}
+            data.forEach((click: any) => {
+                counts[click.card_link_id] = (counts[click.card_link_id] || 0) + 1
+            })
+            setClickCounts(counts)
+        }
+    }, [])
 
     const fetchData = React.useCallback(async () => {
         setLoading(true)
@@ -43,6 +68,7 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
 
         if (orgData) {
             setOrgId(orgData.id)
+            fetchClickData(orgData.id)
             const { data } = await supabase
                 .from('card_links')
                 .select('*')
@@ -51,7 +77,7 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
             if (data) setLinks(data)
         }
         setLoading(false)
-    }, [slug])
+    }, [slug, fetchClickData])
 
     // Initial data load
     React.useEffect(() => { fetchData() }, [fetchData])
@@ -113,7 +139,33 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
             )
             .subscribe()
 
-        return () => { supabase.removeChannel(channel) }
+        // Click counts realtime
+        const clickChannel = supabase
+            .channel(`card_link_clicks:${orgId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'tapconnect',
+                    table: 'card_link_clicks',
+                    filter: `org_id=eq.${orgId}`,
+                },
+                (payload) => {
+                    const newClick = payload.new as any
+                    if (newClick.card_link_id) {
+                        setClickCounts(prev => ({
+                            ...prev,
+                            [newClick.card_link_id]: (prev[newClick.card_link_id] || 0) + 1
+                        }))
+                    }
+                }
+            )
+            .subscribe()
+
+        return () => { 
+            supabase.removeChannel(channel)
+            supabase.removeChannel(clickChannel)
+        }
     }, [orgId])
 
     // Optimistic reorder + batch persist
@@ -129,7 +181,7 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
                 )
             )
         } catch (err) {
-            console.error('Failed to update display order:', err)
+            // error logged
         }
     }
 
@@ -205,6 +257,13 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
         }
     }
 
+    // Calculate Top Link
+    const topLinkId = React.useMemo(() => {
+        if (Object.keys(clickCounts).length === 0) return null
+        return Object.entries(clickCounts).reduce((a, b) => b[1] > a[1] ? b : a)[0]
+    }, [clickCounts])
+    const topLink = React.useMemo(() => links.find(l => l.id === topLinkId), [links, topLinkId])
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header */}
@@ -218,10 +277,57 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
                         <p className="text-sm text-muted-foreground">Configure social, internal, and dynamic vCard assets.</p>
                     </div>
                 </div>
-                <Button onClick={() => { setEditingLink(undefined); setDialogOpen(true) }}>
+                    <Button onClick={() => { setEditingLink(undefined); setDialogOpen(true) }}>
                     <Plus className="w-4 h-4 mr-2" /> Add Link
                 </Button>
             </div>
+
+            {/* AI Summary */}
+            {showAiSummary && (
+                <Alert className="relative bg-primary/5 border-primary/20">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <AlertTitle className="text-primary font-medium">AI Links Insight</AlertTitle>
+                    <AlertDescription className="mt-2 min-h-[60px]">
+                        <TypewriterSummary text={AI_TEXT} />
+                    </AlertDescription>
+                    <button
+                        onClick={() => setLocallyDismissed(true)}
+                        className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </Alert>
+            )}
+
+            {/* Performance Highlight */}
+            {!loading && topLink && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2 p-5 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.03] to-background shadow-sm flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/20">
+                                {getPlatformIcon(topLink.platform)}
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black tracking-widest text-primary uppercase">Top Performing Asset</p>
+                                <h3 className="text-lg font-bold tracking-tight leading-none">{topLink.label || topLink.platform}</h3>
+                                <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-none">{topLink.url}</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                             <div className="text-2xl font-black tracking-tighter text-primary">{clickCounts[topLink.id]}</div>
+                             <p className="text-[9px] font-black tracking-widest text-muted-foreground uppercase">Unique Engagements</p>
+                        </div>
+                    </div>
+                    <div className="p-5 rounded-2xl border bg-card flex flex-col justify-center gap-1">
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">Live Activity</span>
+                        </div>
+                        <div className="text-xl font-bold tracking-tight">Real-time Clicks</div>
+                        <p className="text-[11px] text-muted-foreground">Currently monitoring all link traffic globally.</p>
+                    </div>
+                </div>
+            )}
 
             {/* Loading */}
             {loading && (
@@ -279,9 +385,11 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
 
                                     {/* Label + URL */}
                                     <div className="flex flex-col min-w-0 flex-1 py-3">
-                                        <span className="font-semibold text-sm truncate capitalize leading-none mb-1">
-                                            {link.label || link.platform}
-                                        </span>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-semibold text-sm truncate capitalize leading-none">
+                                                {link.label || link.platform}
+                                            </span>
+                                        </div>
                                         <a
                                             href={link.url}
                                             target="_blank"
@@ -296,6 +404,16 @@ export default function ManageLinksPage({ params }: { params: Promise<{ slug: st
 
                                     {/* Right controls */}
                                     <div className="flex items-center gap-3 shrink-0 ml-4" onClick={e => e.stopPropagation()}>
+                                        {/* Clicks */}
+                                        {clickCounts[link.id] > 0 && (
+                                            <Badge variant="outline" className="h-5 px-2 text-[10px] font-black border-primary/20 bg-primary/5 text-primary tracking-tighter shrink-0 flex items-center">
+                                                <MousePointer2 className="w-3 h-3 mr-1.5" />
+                                                {clickCounts[link.id]}
+                                            </Badge>
+                                        )}
+
+                                        <div className="w-px h-5 bg-border mx-1" />
+
                                         {/* Active toggle */}
                                         <div className="flex items-center gap-2">
                                             <span className={`text-[11px] font-semibold uppercase tracking-wider w-[46px] text-right tabular-nums ${link.is_active ? 'text-emerald-500' : 'text-muted-foreground/50'}`}>

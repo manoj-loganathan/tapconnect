@@ -159,6 +159,35 @@
   html {
     @apply font-sans;
   }
+
+
+
+  /* Advanced Chart Color Mappings */
+  html[data-chart="ocean"] {
+    --chart-1: #2563EB !important; --chart-2: #60A5FA !important; --chart-3: #1D4ED8 !important; --chart-4: #93C5FD !important; --chart-5: #3B82F6 !important;
+  }
+  html[data-chart="sunset"] {
+    --chart-1: #F43F5E !important; --chart-2: #FB923C !important; --chart-3: #DB2777 !important; --chart-4: #FBBF24 !important; --chart-5: #E11D48 !important;
+  }
+  html[data-chart="emerald"] {
+    --chart-1: #10B981 !important; --chart-2: #34D399 !important; --chart-3: #059669 !important; --chart-4: #6EE7B7 !important; --chart-5: #047857 !important;
+  }
+  html[data-chart="neon"] {
+    --chart-1: #8B5CF6 !important; --chart-2: #C084FC !important; --chart-3: #7C3AED !important; --chart-4: #E879F9 !important; --chart-5: #6D28D9 !important;
+  }
+
+  html[data-font="inter"] {
+    --font-sans: var(--font-inter);
+  }
+  html[data-font="jakarta"] {
+    --font-sans: var(--font-jakarta);
+  }
+  html[data-font="outfit"] {
+    --font-sans: var(--font-outfit);
+  }
+  html[data-font="dmsans"] {
+    --font-sans: var(--font-dmsans);
+  }
 }
 
 @layer utilities {
